@@ -586,4 +586,64 @@ public class Base
             Console.WriteLine($"Error listing processes: {ex.Message}");
         }
     }
+
+    public void Kill(string[] args, CancellationToken token)
+    {
+        if (args.Length == 0)
+        {
+            return;
+        }
+
+        foreach (string target in args)
+        {
+            if (token.IsCancellationRequested)
+                break;
+
+            try
+            {
+                if (int.TryParse(target, out int pid))
+                {
+                    try
+                    {
+                        var proc = Process.GetProcessById(pid);
+                        proc.Kill();
+                        Console.WriteLine($"Killed process {pid} ({proc.ProcessName}).");
+                    }
+                    catch (ArgumentException)
+                    {
+                        Console.WriteLine($"Error, No process with PID {pid} found!");
+                    }
+                }
+                else
+                {
+                    var procs = Process.GetProcessesByName(target);
+                    if (procs.Length == 0)
+                    {
+                        Console.WriteLine($"Error, No process named \"{target}\" found!");
+                        continue;
+                    }
+
+                    foreach (var proc in procs)
+                    {
+                        if (token.IsCancellationRequested)
+                            break;
+
+                        try
+                        {
+                            proc.Kill();
+                            Console.WriteLine($"Killed process {proc.Id} ({proc.ProcessName}).");
+                        }
+                        catch (Exception ex)
+                        {
+                            Console.WriteLine($"Error killing process {proc.Id}: {ex.Message}");
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error processing \"{target}\": {ex.Message}");
+            }
+        }
+    }
 }

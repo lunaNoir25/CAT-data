@@ -646,4 +646,23 @@ public class Base
             }
         }
     }
+
+    public void Sleep(string[] args, CancellationToken token)
+    {
+        if (args.Length > 0)
+        {
+            if (int.TryParse(args[0], out int milliseconds))
+            {
+                Thread.Sleep(milliseconds);
+            }
+            else
+            {
+                Console.WriteLine("Error, please provide a valid number in milliseconds.");
+            }
+        }
+        else
+        {
+            Thread.Sleep(1);
+        }
+    }
 }
